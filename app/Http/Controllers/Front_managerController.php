@@ -27,8 +27,7 @@ class Front_managerController extends Controller
 
     public function index()
     {
-
-	 $service = DB::table('services')
+	    $service = DB::table('services')
             ->select('*')
             ->get();
 
@@ -38,49 +37,58 @@ class Front_managerController extends Controller
 
 
   public function login()
-    {
-       return view('front/login');
-    }
+  {
+    return view('front/login');
+  }
 
   public function save_register(Request $request)
  	{
+	  //$username = $request->input('username');
+	  //$password = md5($request->input('password'));
+  	$password = $request->input('password');
+  	$password1 = $request->input('password1');
+  	$email = $request->input('email');
+  	$fname = $request->input('fname');
+    $lname = $request->input('lname');
+  	$login_type = $request->input('login_type');
 
-	//$username = $request->input('username');
-	// $password = md5($request->input('password'));
-	$password = $request->input('password');
-	$password1 = $request->input('password1');
-	$email = $request->input('email');
-	$fname = $request->input('fname');
-	$lname = $request->input('lname');
+  	if($password != $password1)
+  	{
+  		return Redirect::to('/register')->with('error', 'Password and re-enter password should be same.');
+  	}
+    if($login_type == 'interviwer'){
+  	    $check = DB::table('users')
+                 ->select('email')
+                 ->where('email',$email)
+                 ->first();
+    }else{
+        $check = DB::table('user_interviewee')
+                 ->select('email')
+                 ->where('email',$email)
+                 ->first();
+    }
 
-	if($password != $password1)
-	{
-		 return Redirect::to('/register')->with('error', 'Password and re-enter password should be same.');
-	}
-
-	$check = DB::table('users')
-                                 ->select('email')
-                                 ->where('email',$email)
-                                 ->first();
-
-        if(!empty($check->username)){
-            return Redirect::to('/register')->with('error', 'Email Already Exist.');
-        }
+    if(!empty($check->email)){
+      return Redirect::to('/register')->with('error', 'Email Already Exist.');
+    }
 
 		$data = array(
-                        
-                        'password' => $password,
-                        'email'=> $email,
-			'first_name' => $fname,
-                        'last_name' => $lname,
-			'ddate' => date("Y-m-d H:i:s"),
-			'status' => 'approved',
-			
-                    );
+                  'password' => $password,
+                  'email'=> $email,
+            			'first_name' => $fname,
+                  'last_name' => $lname,
+            			'created_at' => date("Y-m-d H:i:s"),
+            			'status' => 'approved',
+                );
 
-                UserRegistration::UpdateOrCreate($data);
+    //UserRegistration::UpdateOrCreate($data);
+    if($login_type == 'interviwer'){
+        DB::table('users')->insert($data);
+    }else{
+        DB::table('user_interviewee')->insert($data);
+    }
+    
 		return Redirect::to('/register')->with('success','Registration Completed.');
-
 	}
 
 
@@ -169,7 +177,7 @@ class Front_managerController extends Controller
         		if(!empty($old_logo))
         		{
      	    		if (File::exists($old_logo_path)) {
-         				unlink($old_logo_path);
+         				//unlink($old_logo_path);
      			    }
         		}
   	        $image = $request->file('logo');
@@ -233,6 +241,11 @@ class Front_managerController extends Controller
           $s2_notes = $request->input('s2_notes');
           $s2_link_congress = $request->input('s2_link_congress');
           $s2_link_download = $request->input('s2_link_download');
+          $facebook_page = $request->input('facebook_page');
+          $twitter_page = $request->input('twitter_page');
+          $linkedin_page = $request->input('linkedin_page');
+          $instagram_page = $request->input('instagram_page');
+          $other_social_media_page = $request->input('other_social_media_page');
 
           $s2_old_logo = $request->input('s2_old_logo');
           if ($request->hasFile('s2_logo')) {
@@ -240,7 +253,7 @@ class Front_managerController extends Controller
             if(!empty($s2_old_logo))
             {
               if (File::exists($s2_old_logo_path)) {
-                unlink($s2_old_logo_path);
+                //unlink($s2_old_logo_path);
               }
             }
             $image = $request->file('s2_logo');
@@ -262,6 +275,11 @@ class Front_managerController extends Controller
                           'link_congress' => $s2_link_congress,
                           'link_image' => $s2_link_download,
                           'iid' => $s2_iid,
+                          'facebook_page' => $facebook_page,
+                          'twitter_page' => $twitter_page,
+                          'instagram_page' => $instagram_page,
+                          'linkedin_page' => $linkedin_page,
+                          'other_social_media_page' => $other_social_media_page,
                           'image_wee' => $s2_logo_name,
                     );
           $check = DB::table('interviewee_2')
@@ -281,6 +299,10 @@ class Front_managerController extends Controller
       if($step == 'step_3') {
       	 $s3_iid = $request->input('s3_interviewid');
          $s3_ques = $request->input('s3_que');
+         $lead_paragraph = $request->input('lead_paragraph');
+         $note_lead_paragraph = $request->input('note_lead_paragraph');
+         $final_text = $request->input('final_text');
+         $note_final_text = $request->input('note_final_text');
 
          $delete_detail = DB::table('questions_3')
                               ->where('iid', $s3_iid)
@@ -289,6 +311,12 @@ class Front_managerController extends Controller
          foreach ($s3_ques as $key => $s3_que) {
          	$question = '';
          	$notes = '';
+          $anwser = '';
+          $notes_precious = '';
+          $anwser_precious = '';
+          $interviewer_validate = '';
+          $interviewee_validate = '';
+
          	foreach ($s3_que as $key => $value) {
          		if($key == 'question'){
          			$question = $value;
@@ -296,25 +324,67 @@ class Front_managerController extends Controller
          		if($key == 'notes'){
          			$notes = $value;
          		}
+            if($key == 'anwser'){
+              $anwser = $value;
+            }
+            if($key == 'notes_precious'){
+              $notes_precious = $value;
+            }
+            if($key == 'anwser_precious'){
+              $anwser_precious = $value;
+            }
+            if($key == 'interviewer_validate'){
+              $interviewer_validate = $value;
+            }
+            if($key == 'interviewee_validate'){
+              $interviewee_validate = $value;
+            }
          		
          	}
          	if($question != '' && $notes != ''){
          		$s3_data = array(
          				'iid' => $s3_iid,
          				'question' => $question,
-         				'notes' => $notes,
+                'notes' => $notes,
+                'lead_paragraph' => $lead_paragraph,
+                'note_lead_paragraph' => $note_lead_paragraph,
+                'final_text' => $final_text,
+         				'note_final_text' => $note_final_text,
+                'anwser' => $anwser,
+                'notes_precious' => $notes_precious,
+                'anwser_precious' => $anwser_precious,
+                'interviewer_validate' => $interviewer_validate,
+                'interviewee_validate' => $interviewee_validate,
          			);
          	}
          	if($question == '' && $notes != ''){
          		$s3_data = array(
          				'iid' => $s3_iid,
          				'notes' => $notes,
+                'lead_paragraph' => $lead_paragraph,
+                'note_lead_paragraph' => $note_lead_paragraph,
+                'final_text' => $final_text,
+                'note_final_text' => $note_final_text,
+                'anwser' => $anwser,
+                'notes_precious' => $notes_precious,
+                'anwser_precious' => $anwser_precious,
+                'interviewer_validate' => $interviewer_validate,
+                'interviewee_validate' => $interviewee_validate,
          			);
          	}
          	if($question != '' && $notes == ''){
          		$s3_data = array(
          				'iid' => $s3_iid,
          				'question' => $question,
+                'lead_paragraph' => $lead_paragraph,
+                'note_lead_paragraph' => $note_lead_paragraph,
+                'final_text' => $final_text,
+                'note_final_text' => $note_final_text,
+                'anwser' => $anwser,
+                'notes_precious' => $notes_precious,
+                'anwser_precious' => $anwser_precious,
+                'interviewer_validate' => $interviewer_validate,
+                'interviewee_validate' => $interviewee_validate,
          			);
          	}
          	Questions::UpdateOrCreate($s3_data); 
@@ -363,11 +433,19 @@ class Front_managerController extends Controller
          $s5_finals = $request->input('s5_final');
          
          foreach ($s5_finals as $key => $s5_final) {
+          $question = null;
+          $notes = null;
          	$anwser = null;
          	$notes_precious = null;
          	$anwser_precious = null;
          	$id = '';
          	foreach ($s5_final as $key => $value) {
+            if($key == 'question'){
+              $question = $value;
+            }
+            if($key == 'notes'){
+              $notes = $value;
+            }
          		if($key == 'anwser'){
          			$anwser = $value;
          		}
@@ -383,6 +461,8 @@ class Front_managerController extends Controller
          		
          	}
      		$s5_data = array(
+            'question' => $question,
+            'notes' => $notes,
      				'anwser' => $anwser,
      				'notes_precious' => $notes_precious,
      				'anwser_precious' => $anwser_precious,
@@ -393,6 +473,68 @@ class Front_managerController extends Controller
          	
          }
         return Redirect::to($url.$s5_iid)->with('success','Data Saved.')->with('step','5');
+      }
+      if($step == 'step_6') {
+         $s6_iid = $request->input('s6_interviewid');
+         $s6_finals = $request->input('s6_final');
+         
+         foreach ($s6_finals as $key => $s6_final) {
+          $question = null;
+          $notes = null;
+          $anwser = null;
+          $notes_precious = null;
+          $anwser_precious = null;
+          $interviewer_validate = null;
+          $interviewee_validate = null;
+          $id = '';
+          foreach ($s6_final as $key => $value) {
+            if($key == 'question'){
+              $question = $value;
+            }
+            if($key == 'notes'){
+              $notes = $value;
+            }
+            if($key == 'anwser'){
+              $anwser = $value;
+            }
+            if($key == 'notes_precious'){
+              $notes_precious = $value;
+            }
+            if($key == 'anwser_precious'){
+              $anwser_precious = $value;
+            }
+            if($key == 'interviewer_validate'){
+              $interviewer_validate = $value;
+            }
+            if($key == 'interviewee_validate'){
+              $interviewee_validate = $value;
+            }
+            if($key == 'id'){
+              $id = $value;
+            }
+            
+          }
+        $s6_data = array(
+            'question' => $question,
+            'notes' => $notes,
+            'anwser' => $anwser,
+            'notes_precious' => $notes_precious,
+            'anwser_precious' => $anwser_precious,
+            'interviewer_validate' => $interviewer_validate,
+            'interviewee_validate' => $interviewee_validate,
+          );
+        $update_detail = DB::table('questions_3')
+                          ->where('id', $id)
+                          ->update($s6_data);
+          
+         }
+         $login_type = session('login_type');
+         if($login_type == 'admin'){
+            return Redirect::to('dashboard_admin')->with('success','Data Saved.');  
+         }else{
+            return Redirect::to('dashboard')->with('success','Data Saved.');  
+         }
+        
       }
       if($step == 'send_email') {
         /*$s3_iid = $request->input('s3_interviewid');
@@ -537,18 +679,42 @@ class Front_managerController extends Controller
       $last_name = $request->input('last_name');
       $email = $request->input('email');
       $password = $request->input('password');
+      $occupation = $request->input('occupation');
+      $phone = $request->input('phone');
+      $website = $request->input('site');
 
+      $old_logo = $request->input('old_logo');
+      $request->hasFile('logo');
+      if ($request->hasFile('logo')) {
+        $old_logo_path = public_path('/logo'). "/".  $old_logo;
+        if(!empty($old_logo))
+        {
+          if (File::exists($old_logo_path)) {
+            //unlink($old_logo_path);
+          }
+        }
+        $image = $request->file('logo');
+        $logo_name = $image->getClientOriginalName();
+        $destinationPath = public_path('/logo');
+        $imagePath = $destinationPath. "/".  $logo_name;
+        $image->move($destinationPath, $logo_name);
+      }else{
+        $logo_name = $old_logo;
+      }
+          
       if($login_type == 'interviewee'){
           $user_id = session('user_name');
+
           DB::table('user_interviewee')
                 ->where('id', $id)
-                ->update(['first_name' => $first_name,'last_name' => $last_name,'email' => $email,'password' => $password]);
+                ->update(['first_name' => $first_name,'last_name' => $last_name,'email' => $email,'password' => $password,'occupation' => $occupation,'phone' => $phone,'website' => $website,'profile_pic' => $logo_name]);
           session(['user_name'=>$email]);
       }else{
           $user_id = session('user_id');
+          
           DB::table('users')
                 ->where('id', $id)
-                ->update(['first_name' => $first_name,'last_name' => $last_name,'email' => $email,'password' => $password]);
+                ->update(['first_name' => $first_name,'last_name' => $last_name,'email' => $email,'password' => $password,'occupation' => $occupation,'phone' => $phone,'website' => $website,'profile_pic' => $logo_name]);
 
           session(['user_name'=>$email]);
       }
@@ -646,5 +812,61 @@ class Front_managerController extends Controller
         return substr(str_shuffle(str_repeat($pool, $length)), 0, $length);
     }
 
+  public function name_auto_fill(){
+    $searchTerm = $_GET['term'];
+    $users = DB::table('users')
+                ->where('first_name', 'like', '%'.$searchTerm.'%')
+                ->get();
 
+    $users_data = array(); 
+    if(count($users) > 0){ 
+        foreach ($users as $key => $value) {
+            $data['id'] = $value->id; 
+            $data['value'] = $value->first_name; 
+            array_push($users_data, $data); 
+        } 
+    } 
+     
+    // Return results as json encoded array 
+    echo json_encode($users_data); 
+  }  
+
+  public function get_auto_comp_values(Request $request)
+  {
+      $user_id = $request->input('user_id');
+      $users = DB::table('users')
+                ->where('id', '=', $user_id)
+                ->first();
+
+      echo json_encode($users);
+  }
+
+  public function name_auto_fill_interviewee(){
+    $searchTerm = $_GET['term'];
+    $users = DB::table('user_interviewee')
+                ->where('first_name', 'like', '%'.$searchTerm.'%')
+                ->get();
+
+    $users_data = array(); 
+    if(count($users) > 0){ 
+        foreach ($users as $key => $value) {
+            $data['id'] = $value->id; 
+            $data['value'] = $value->first_name; 
+            array_push($users_data, $data); 
+        } 
+    } 
+     
+    // Return results as json encoded array 
+    echo json_encode($users_data); 
+  }  
+
+  public function get_auto_comp_values_interviewee(Request $request)
+  {
+      $user_id = $request->input('user_id');
+      $users = DB::table('user_interviewee')
+                ->where('id', '=', $user_id)
+                ->first();
+
+      echo json_encode($users);
+  }
 }
