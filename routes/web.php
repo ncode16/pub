@@ -72,6 +72,12 @@ Route::get('/admin/interviewee/delete/{id}', 'admin\IntervieweeController@delete
 
 Route::get('/profile/', 'Front_managerController@profile')->middleware('check');
 Route::post('/update_profile/', 'Front_managerController@update_profile')->middleware('check');
+
+Route::get('/name_auto_fill', 'Front_managerController@name_auto_fill');
+Route::post('/get_auto_comp_values', 'Front_managerController@get_auto_comp_values');
+
+Route::get('/name_auto_fill_interviewee', 'Front_managerController@name_auto_fill_interviewee');
+Route::post('/get_auto_comp_values_interviewee', 'Front_managerController@get_auto_comp_values_interviewee');
 /*
 Route::get('/', 'Admin_loginController@index')->middleware('check_after');
 Route::get('/interview/{id}', 'Admin_loginController@interview')->middleware('check_after');
