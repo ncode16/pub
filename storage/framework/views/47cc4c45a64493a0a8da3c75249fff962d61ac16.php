@@ -3,6 +3,19 @@
 <!--Content Area-->
 <style>
 .table-responsive {height:280px;}
+.new-interview{
+	background: #00bf6f;
+    border-color: #00bf6f;
+    color: #fff;
+    border: 1px solid #00bf6f;
+    padding: 10px 18px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 14px
+}
+.new-interview-a{
+	float: right;margin-bottom: 20px;text-decoration: none !important;
+}
 </style>
 <?php
 $login_type = session('login_type');
@@ -17,15 +30,26 @@ if($login_type == 'interviewee'){
 <div class="row">
 <div class="col-12">
 <div class="contentHead">
-<h2 style="text-align: center;">Dashboard</h2>
+<h2 style="text-align: center;">Dashboard – Manage your interviews</h2>
 
 </div>
+	<div class="row">
+		<div class="col-12">
+			<?php if(!empty(session('user_name')) && session('login_type') != 'interviewee'){ 
+		 		$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+				$keys = substr(str_shuffle(str_repeat($pool, 10)), 0, 10);
+		 	?>
+			      <a class="new-interview-a" href="<?php echo e(url('interview')); ?>/<?php echo $keys ?>"><span class="new-interview">New interview</span></a>
+			<?php  } ?>
+		</div>
+	</div>
+
 	<div class="row">
  
 	<div class="col-12">
 
 		<div class="item cleardiv">
-		 
+		 	
 			     
 			<table class="table table-striped table-bordered" id="example">
 			  <thead>
@@ -36,6 +60,7 @@ if($login_type == 'interviewee'){
 			      <th scope="col">Interviewee</th>
 			      <th scope="col">Date creation interview</th>
 			      <th scope="col">Deadline</th>
+			      <th scope="col">Validated</th>
 			      <th scope="col">Action</th>
 			      
 			    </tr>
@@ -53,6 +78,35 @@ if($login_type == 'interviewee'){
                                 <td><?php echo $value->name_wee.' '.$value->surname_wee; ?></td>
                                 <td><?php echo date('m/d/Y',strtotime($value->created_date)); ?></td>
                                 <td><?php echo $value->deadline; ?></td>
+                                <td>
+                                	<?php
+                                		$login_type = session('login_type');
+                                		$validate = array();
+                                		if($login_type == 'frontuser'){
+                                			$validate = DB::table('questions_3')
+												            ->select('*')
+												            ->where('iid',$value->key)
+												            ->where('interviewer_validate','yes')
+												            ->get();
+										}elseif($login_type == 'interviewee'){
+											$validate = DB::table('questions_3')
+												            ->select('*')
+												            ->where('iid',$value->key)
+												            ->where('interviewee_validate','yes')
+												            ->get();
+										}else{
+											$validate = DB::table('questions_3')
+												            ->select('*')
+												            ->where('iid',$value->key)
+												            ->orWhere('interviewee_validate','yes')
+												            ->orWhere('interviewee_validate','yes')
+												            ->get();
+										}
+										if(count($validate) > 0){
+											echo '<span style="color:#00bf6f">V</span>';
+										}
+                                	?>
+                                </td>
                                 <td>
                                 	<?php $url = $link.'/'.$value->key; ?>
                                     <a href="<?php echo e(url($url)); ?>"><i class="icon-pencil"></i>Edit</a>
