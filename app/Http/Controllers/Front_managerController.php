@@ -30,7 +30,7 @@ class Front_managerController extends Controller
 	    $service = DB::table('services')
             ->select('*')
             ->get();
-
+      
       return view('front/index',compact('service'));
     }
 
@@ -115,14 +115,23 @@ class Front_managerController extends Controller
 
       	$interviewid = $id;
 
-
+        $current_date = date("m/d/Y");
+        $interviewer_1 = DB::table('interviewer_1')
+                            ->where('deadline','<',$current_date)
+                            ->where('deadline','!=','None')
+                            ->update(array('deadline' => 'None'));
+                            
        return view('front/multi-step-form',compact('interviewid','interviewdata','interviewee_data','question_data'));
     }
 
 
   public function interview1(Request $request)
     {
-
+      $current_date = date("m/d/Y");
+      $interviewer_1 = DB::table('interviewer_1')
+                          ->where('deadline','<',$current_date)
+                          ->where('deadline','!=','None')
+                          ->update(array('deadline' => 'None'));
       //echo "<pre>";
       //echo $request->input('s2_interviewid');
       $step = $request->input('btn_step');
@@ -169,7 +178,13 @@ class Front_managerController extends Controller
         	$interlang = $request->input('interlang');
         	$lang = $request->input('lang');
         	$notes = $request->input('notes');
-        	$deadlinedate = $request->input('deadlinedate');
+          $no_deadline = $request->input('no_deadline');
+          if($no_deadline == '1'){
+            $deadlinedate = 'None';
+          }else{
+            $deadlinedate = $request->input('deadlinedate');  
+          }
+        	
         	$interviewid = $request->input('interviewid');
         	$old_logo = $request->input('old_logo');
          	if ($request->hasFile('logo')) {
@@ -303,6 +318,9 @@ class Front_managerController extends Controller
          $note_lead_paragraph = $request->input('note_lead_paragraph');
          $final_text = $request->input('final_text');
          $note_final_text = $request->input('note_final_text');
+         $interview_article = $request->input('interview_article');
+         $subtitle = $request->input('subtitle');
+         $interview_website = $request->input('interview_website');
 
          $delete_detail = DB::table('questions_3')
                               ->where('iid', $s3_iid)
@@ -355,6 +373,9 @@ class Front_managerController extends Controller
                 'anwser_precious' => $anwser_precious,
                 'interviewer_validate' => $interviewer_validate,
                 'interviewee_validate' => $interviewee_validate,
+                'interview_article' => $interview_article,
+                'subtitle' => $subtitle,
+                'interview_website' => $interview_website,
          			);
          	}
          	if($question == '' && $notes != ''){
@@ -370,6 +391,9 @@ class Front_managerController extends Controller
                 'anwser_precious' => $anwser_precious,
                 'interviewer_validate' => $interviewer_validate,
                 'interviewee_validate' => $interviewee_validate,
+                'interview_article' => $interview_article,
+                'subtitle' => $subtitle,
+                'interview_website' => $interview_website,
          			);
          	}
          	if($question != '' && $notes == ''){
@@ -385,6 +409,9 @@ class Front_managerController extends Controller
                 'anwser_precious' => $anwser_precious,
                 'interviewer_validate' => $interviewer_validate,
                 'interviewee_validate' => $interviewee_validate,
+                'interview_article' => $interview_article,
+                'subtitle' => $subtitle,
+                'interview_website' => $interview_website,
          			);
          	}
          	Questions::UpdateOrCreate($s3_data); 
@@ -529,6 +556,42 @@ class Front_managerController extends Controller
           
          }
          $login_type = session('login_type');
+          $interviewer_email_data = DB::table('interviewer_1')
+                          ->where('iid', $s6_iid)
+                          ->select('email')
+                          ->first();
+
+          $interviewee_email_data = DB::table('interviewee_2')
+                          ->where('iid', $s6_iid)
+                          ->select('email_wee')
+                          ->first();
+
+          $interviewer_email = '';
+          $interviewee_email = '';
+          if(isset($interviewer_email_data->email)){
+            $interviewer_email = $interviewer_email_data->email;
+          }
+
+          if(isset($interviewee_email_data->email_wee)){
+            $interviewee_email = $interviewee_email_data->email_wee;
+          }
+                         
+          $from = 'xavier.gruffat@pharmanetis.com';
+
+          $to = $interviewer_email.','.$interviewee_email;
+          $subject = "Interview validated";
+          $headers  = 'MIME-Version: 1.0' . "\r\n";
+          $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+          $headers .= 'From: '.$from."\r\n".
+              'Reply-To: '.$from."\r\n" .
+              'X-Mailer: PHP/' . phpversion();
+              
+          $message = '<html><body>';
+          $message .= "<p>This interview has been validated.</p>";
+          $message .= '</body></html>';
+          
+          $mail = mail($to,$subject,$message,$headers);
+
          if($login_type == 'admin'){
             return Redirect::to('dashboard_admin')->with('success','Data Saved.');  
          }else{
@@ -582,15 +645,24 @@ class Front_managerController extends Controller
         $pop_name = $request->input('pop_name');
         $pop_email = $request->input('pop_email');
         $pop_note = $request->input('pop_note');
+        $from = 'xavier.gruffat@pharmanetis.com';
 
         $to = $pop_email;
         $subject = "Invite for interview";
-        $txt = url('/').'/interviewee/'.$pop_interviewid."<br>".$pop_note;
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-        $headers .= "From: webmaster@example.com";
+        $headers  = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+        $headers .= 'From: '.$from."\r\n".
+            'Reply-To: '.$from."\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+            
+        $message = '<html><body>';
+        $message .= "Interview Link : ";
+        $message .= "<a href='https://www.publinetis.com/interviewee/".$pop_interviewid."'>Click Here</a>";
+        $message .= "<br> Note : ".$pop_note;
+        $message .= '</body></html>';
+        
 
-        $mail = mail($to,$subject,$txt,$headers);
+        $mail = mail($to,$subject,$message,$headers);
         if($mail){
           echo 'Mail Send successfully.';
         }else{
@@ -628,6 +700,11 @@ class Front_managerController extends Controller
   	  $service = DB::table('services')
               ->select('*')
               ->get();
+      $current_date = date("m/d/Y");
+      $interviewer_1 = DB::table('interviewer_1')
+                  ->where('deadline','<',$current_date)
+                  ->where('deadline','!=','None')
+                  ->update(array('deadline' => 'None'));
       $login_type = session('login_type');
       if($login_type == 'interviewee'){
           $user_id = session('user_name');
