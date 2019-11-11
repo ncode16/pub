@@ -58,7 +58,7 @@ if($login_type == 'interviewee'){
 			      <!-- <th scope="col">Interview Key</th> -->
 			      <th scope="col">Interviewer</th>
 			      <th scope="col">Interviewee</th>
-			      <th scope="col">Date creation interview</th>
+			      <th scope="col">Creation interview</th>
 			      <th scope="col">Deadline</th>
 			      <th scope="col">Validated</th>
 			      <th scope="col">Action</th>
