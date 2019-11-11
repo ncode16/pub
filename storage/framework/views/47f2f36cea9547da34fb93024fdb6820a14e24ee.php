@@ -245,17 +245,20 @@ $question2 = '';
 $note1 = '';
 $note2 = '';
 
-$anwser1;
-$notes_precious1;
-$anwser_precious1;
-$interviewer_validate1;
-$interviewee_validate1;
+$anwser1 = '';
+$notes_precious1 = '';
+$anwser_precious1 = '';
+$interviewer_validate1 = '';
+$interviewee_validate1 = '';
 
-$anwser2;
-$notes_precious2;
-$anwser_precious2;
-$interviewer_validate2;
-$interviewee_validate2;
+$anwser2 = '';
+$notes_precious2 = '';
+$anwser_precious2 = '';
+$interviewer_validate2 = '';
+$interviewee_validate2 = '';
+$interview_article = '';
+$subtitle = '';
+$interview_website = '';
 
 if(isset($question_data[0]->anwser) && !empty($question_data[0]->anwser)){
   $anwser1 = $question_data[0]->anwser;
@@ -331,6 +334,18 @@ if(isset($question_data[0]->note_final_text) && !empty($question_data[0]->note_f
   $note_final_text = $question_data[0]->note_final_text;
 }
 
+if(isset($question_data[0]->interview_article) && !empty($question_data[0]->interview_article)){
+  $interview_article = $question_data[0]->interview_article;
+}
+
+if(isset($question_data[0]->subtitle) && !empty($question_data[0]->subtitle)){
+  $subtitle = $question_data[0]->subtitle;
+}
+
+if(isset($question_data[0]->interview_website) && !empty($question_data[0]->interview_website)){
+  $interview_website = $question_data[0]->interview_website;
+}
+
 if($login_type == 'interviewee'){
   $url = 'interviewee/'.$interviewid ;
 }else{
@@ -347,7 +362,7 @@ if($login_type == 'interviewee'){
 <div class="col-12">
 <!-- <h1 contenteditable="true">Interview with Michael Jordan</h1> -->
 <h1 contenteditable="false">Interview with 
-<input type="text" name="interview_with" id="interview_with" value="<?php echo $interview_with; ?>" autocomplete="off" >
+<input type="text" name="interview_with" id="interview_with" value="<?php echo $interview_with; ?>" autocomplete="off" class="<?php if($login_type == 'interviewee'){ ?> disabled <?php } ?>" >
 </h1>
 <!--<p>We get answers for 20 million questions daily. Get the feedback you need with a global leader in survey software.</p>-->
 <!-- <a class="btn btn-rnd btn-green">New interview</a> -->
@@ -365,22 +380,25 @@ if($login_type == 'interviewee'){
     <div id="multiFormTab">
     <?php 
           if($login_type == 'interviewee'){
-              $login_type_cls = 'disabled';
+              //$login_type_cls = 'disabled';
+              $login_type_cls = '';
           }else{
               $login_type_cls = '';
           }
    ?>
 <ul class="resp-tabs-list">
 <li class="<?php echo $login_type_cls; ?>" id="li-step-1">1<span class="cust-icon">🎤</span><span>&nbsp;&nbsp;&nbsp;Interviewer</span></li>
-<li class="<?php if($login_type == 'interviewee'){ ?> resp-tab-active<?php } ?>" id="li-step-2">2<span class="cust-icon">✍️</span><span>&nbsp;&nbsp;&nbsp;Interviewee</span></li>
-<li class="<?php echo $login_type_cls; ?>" id="li-step-3">3<span class="cust-icon">❓</span><span>Questions</span></li>
+<!-- <li class="<?php if($login_type == 'interviewee'){ ?> resp-tab-active<?php } ?>" id="li-step-2">2<span class="cust-icon">✍️</span><span>&nbsp;&nbsp;&nbsp;Interviewee</span></li> -->
+<li id="li-step-2" class="<?php if($login_type == 'interviewee'){ ?> resp-tab-active<?php } ?>">2<span class="cust-icon">✍️</span><span>&nbsp;&nbsp;&nbsp;Interviewee</span></li>
+<!-- <li class="<?php echo $login_type_cls; ?>" id="li-step-3">3<span class="cust-icon">❓</span><span>Questions</span></li> -->
+<li id="li-step-3">3<span class="cust-icon" style="left: -65px">❓</span><span style="width: 160px;">Questions / Interview</span></li>
 <li id="li-step-4">4<span class="cust-icon">🙋</span><span>Answers</span></li>
 <li id="li-step-5">5<span class="cust-icon">👁️</span><span>Review</span></li>
 <li id="li-step-6">6<span class="cust-icon">✔️</span><span>Validation</span></li>
 </ul>
 
 <div class="resp-tabs-container">
-<div id="step-1" class="step">
+<div id="step-1" class="step <?php if($login_type == 'interviewee'){ ?>disabled-step<?php } ?>">
 
 <?php if(Session::get('step') == '1'){ ?>
     <?php echo $__env->make('layouts.flash-message', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
@@ -515,24 +533,44 @@ if($login_type == 'interviewee'){
 </div>
 <div class="detSection">
 <h3>Deadline</h3>
-<div class="form-group">
-<label class="fName">Select a date for the deadline*</label>
+    <!-- <div class="form-group">
+        <label class="fName">Select a date for the deadline*</label>
         <div class="col-xs-5 date">
             <div class="input-group input-append date" id="datePicker">
                 <input type="text" class="form-control  form-control-lg " name="deadlinedate" id="deadlinedate"  value="<?php echo e($deadline); ?>"   />
                 <span class="input-group-append add-on"><span class="icon-calendar"></span></span>
             </div>
         </div>
-    </div>
+    </div> -->
+    <?php
+    $current_date = date("m/d/Y");
+    ?>
+        
+
+        <div class="form-group" id="deadline_div">
+          <label class="fName">Select a date for the deadline*</label>
+          <div class="col-xs-5 date">
+              <div class="input-group input-append date" id="datePicker">
+                  <input type="text" class="form-control form-control-lg " name="deadlinedate" id="deadlinedate" value="<?php echo e($deadline); ?>"   />
+                  <span class="input-group-append add-on"><span class="icon-calendar"></span></span>
+              </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-left: 25px;">
+          <input type="checkbox" id="no_deadline" value="1" name="no_deadline" class="custom-control-input" <?php if($deadline == 'None'){ ?> checked  <?php } ?> >
+          <label class="custom-control-label" for="no_deadline">No deadline</label>
+          <!-- <input type="hidden" class="form-control form-control-lg " name="deadlinedate" id="deadlinedate"  value="<?php echo e($deadline); ?>"   /> -->
+        </div>
 
 <div>
 <button type="submit" value="step_1" class="btn btn-green" name="btn_step" id="btn_step" style="width:21% !important;">Save</button>
 </div>
-
+</div>
 
 <div class="form-group text-right">
 <!-- <button type="button" onClick="hello();" class="btn btn-prev">< </button> -->
-<button type="button" class="btn btn-nxt" id="link-step-1">></button>
+<button type="button"  id="link-step-1" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>"></button>
 
 </div>
 
@@ -540,7 +578,7 @@ if($login_type == 'interviewee'){
   *Mandatory fields
 </div>
 
-</div>
+
  
 
 
@@ -640,7 +678,7 @@ if($login_type == 'interviewee'){
     </div>
   </form>
   <div class="form-group text-right">
-    <button type="button" class="btn btn-nxt" id="link-step-2">></button>
+    <button type="button" class="btn btn-nxt" id="link-step-2" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>" style="max-width: none;"></button>
   </div>
   <div class="form-group text-left">
   *Mandatory fields
@@ -649,7 +687,7 @@ if($login_type == 'interviewee'){
 <?php }else{ echo "<div>No Data</div>"; }?>
 
 <?php if(!empty($s2_fname)){ ?>
-<div class="step" id="step-3" >
+<div class="step <?php if($login_type == 'interviewee'){ ?>disabled-step<?php } ?>" id="step-3" >
   <?php if(Session::get('step') == '3'){ ?>
     <?php echo $__env->make('layouts.flash-message', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
   <?php } ?>
@@ -657,6 +695,20 @@ if($login_type == 'interviewee'){
   <?php echo csrf_field(); ?>
     <input type="hidden" id="s3_interviewid" name="s3_interviewid" value="<?php echo e($interviewid); ?>"> 
     <div class="detSection">
+      <h3>Title interview</h3>
+      <div class="form-group">
+          <label class="fName">Title interview/article</label>
+          <input type="text" class="form-control form-control-lg" id="interview_article" name="interview_article" placeholder="E.g. Interview with Barack Obama, the superstar politician" value="<?php echo e($interview_article); ?>">
+      </div>
+      <div class="form-group">
+          <label class="fName">Subtitle (if any)</label>
+          <input type="text" class="form-control form-control-lg" id="subtitle" name="subtitle" placeholder="E.g. Barack Obama is giving an interview to our media and…" value="<?php echo e($subtitle); ?>">
+      </div>
+      <div class="form-group">
+          <label class="fName">URL or website where interview will be published</label>
+          <input type="text" class="form-control form-control-lg" id="interview_website" name="interview_website" placeholder="E.g. https//www.cnn.com/interview-obama-superstar-politician" value="<?php echo e($interview_website); ?>">
+      </div>
+
       <h3>Introduction</h3>
       <div class="form-group">
           <label class="fName">Lead paragraph (rider, chapeau)</label>
@@ -788,7 +840,7 @@ if($login_type == 'interviewee'){
 
 </form>
 <div class="form-group text-right">
-    <button type="button" class="btn btn-nxt" id="link-step-3">></button>
+    <button type="button" class="btn btn-nxt" id="link-step-3" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>" style="max-width: none;"></button>
   </div>
 </div>
 <?php }else{ echo "<div>No Data</div>"; }?>
@@ -838,7 +890,7 @@ if($login_type == 'interviewee'){
       <?php } ?>
   </form>
   <div class="form-group text-right">
-    <button type="button" class="btn btn-nxt" id="link-step-4">></button>
+    <button type="button" class="btn btn-nxt" id="link-step-4" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>" style="max-width: none;"></button>
   </div>
 </div>
 <?php }else{ echo "<div>No Data</div>"; }?>
@@ -897,7 +949,7 @@ if($login_type == 'interviewee'){
       <?php } ?>
   </form>
   <div class="form-group text-right">
-    <button type="button" class="btn btn-nxt" id="link-step-5">></button>
+    <button type="button" class="btn btn-nxt" id="link-step-5" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>" style="max-width: none;"></button>
   </div>
 </div>
 <?php }else{ echo "<div>No Data</div>"; }?>
@@ -983,7 +1035,7 @@ if($login_type == 'interviewee'){
       <?php } ?>
   </form>
   <div class="form-group text-right">
-    <button type="button" class="btn btn-nxt" id="link-step-6">></button>
+    <button type="button" class="btn btn-nxt" id="link-step-6" style="pointer-events: all;background: none !important;border:none !important"><img src="<?php echo e(asset('logo/right-arrow.png')); ?>" style="max-width: none;"></button>
   </div>
 </div>
 <?php }else{ echo "<div>No Data</div>"; }?>
@@ -1038,6 +1090,11 @@ if($login_type == 'interviewee'){
     border:none !important;
     resize: none;
   }
+  .disabled-step{
+    pointer-events: none;
+    border:none !important;
+    resize: none;
+  }
   .disabled-chk{
     pointer-events: none;
     opacity: 0.5;
@@ -1069,8 +1126,8 @@ if($login_type == 'interviewee'){
 <?php
 if($login_type == 'interviewee'){ ?>
   $('#link-step-2').click(function(e){
-      $('#li-step-4').addClass('resp-tab-active');
-      $('#li-step-4').click();
+      $('#li-step-3').addClass('resp-tab-active');
+      $('#li-step-3').click();
       $(window).scrollTop(0);
   });
 <?php }else{ ?>
@@ -1110,8 +1167,8 @@ if($login_type == 'interviewee'){ ?>
 <?php 
 if($login_type == 'interviewee'){ ?>
   $('#link-step-6').click(function(e){
-      $('#li-step-2').addClass('resp-tab-active');
-      $('#li-step-2').click();
+      $('#li-step-1').addClass('resp-tab-active');
+      $('#li-step-1').click();
       $(window).scrollTop(0);
   });
 <?php }else{ ?>
@@ -1337,10 +1394,15 @@ if($login_type == 'interviewee'){
       var pop_note = $('#pop_note').val();
       var pop_interviewid = $('#pop_interviewid').val();
       //$('.pop_submit').click();
+      $.ajaxSetup({
+          headers: {
+              'X-CSRF-TOKEN': "<?php echo e(csrf_token()); ?>",
+          }
+      });
       $.ajax({
         url: '<?php echo url($url); ?>',
         data: {
-            "_token": "<?php echo e(csrf_token()); ?>",
+            /*"_token": "<?php echo e(csrf_token()); ?>",*/
             'pop_email': pop_email,
             'pop_name': pop_name,
             'pop_note': pop_note,
@@ -1425,7 +1487,16 @@ if($login_type == 'interviewee'){
         }
     });
   });
+  $('#no_deadline').change(function(){
+    if(!$('#no_deadline').is(':checked')){
+      $('#deadline_div').show();
+      //$('#deadlinedate').val('');
+    }else{
+      $('#deadline_div').hide();
+    }
+  });
 
+  $('#no_deadline').change();
   var select_all_interviewer = document.getElementById("select-interviewer");
   var checkboxes_interviewer = document.getElementsByClassName("checkbox-interviewer");
 
@@ -1474,6 +1545,7 @@ if($login_type == 'interviewee'){
   }
 
   
+  //$('#no_deadline').click();
   </script>
 
 <style type="text/css">
