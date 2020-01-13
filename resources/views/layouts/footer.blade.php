@@ -1,15 +1,29 @@
-<!--footer-->
-<footer>
-<div class="container">
-<div class="row">
-<div class="col-12">
-<div class="copyright">@ <?php echo date('Y') ?>, Publinetis</div>
-<div class="design">Website Designed & Developed by: <a href="http://www.ncodetechnologies.com/" target="_blank">NCode Technologies, Inc.</a></div>
-</div>
-</div>
-</div>
-</footer>
+<style type="text/css">
+	.copyright {
+    color: #333333;
+    font-size: 17px;
+    margin: 0;
+    font-size: 18px;
+    color: #333333;
+    font-family: 'NexaRegular';
+    font-weight: normal;
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+    line-height: 30px;
+}
 
+    footer {
+    background: #fff;
+    padding: 24px 0;
+	}
+}
+</style>
+<footer>
+    <div class="container">
+      <p class="copyright">@ <?php echo date('Y') ?> Publinetis.com - A project by Pharmanetis Ltd. - Switzerland</p>
+    </div>
+  </footer>
 <!-- /footer-->
 
 

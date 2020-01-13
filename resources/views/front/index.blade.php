@@ -1,48 +1,54 @@
 @include('layouts.home')
-<!--Content Area-->
-<section class="contentWrapper">
-<div class="container">
-<div class="row">
-<div class="col-12">
-<div class="contentHead">
-<h2>Publinetis - Power the curious</h2>
-<div class="subHead">Industry's standard dummy text ever since</div>
-</div>
-<p>Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-<h5>Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including</h5>
-</div>
-</div>
-</div>
-</section>
-<section class="serviceWrapper" style="background:url(images/serviceBack.jpg) no-repeat center top; background-size:cover;">
-<div class="container">
-<div class="row">
-<div class="col-12">
-<div class="contentHead">
-<h2>Publinetis - Power the curious</h2>
-<div class="subHead">Industry's standard dummy text ever since</div>
-</div>
+<!DOCTYPE HTML>
 
-<div class="owl-carousel owl-theme"  id="serviceCounter">
-
-@foreach ($service as $value) 
-<div class="item">
-              <div class="shadow-effect">
-                <i class="icon-request"></i>
-                <h4> {{ $value->title }} </h4>
-                <p> <?php echo html_entity_decode($value->description); ?> </p>
-				<a class="rMore" href="{{ url('pricing') }}">Read more <i class="icon-fdas"></i></a>
+  <section class="top-section">
+    <div class="logo">
+      <div class="container">
+        <img class="img-fluid" src="{{ asset('assets/layouts/layout4/front/images1/publinetis-logo.png') }}" />
+      </div>
+    </div>
+    <div class="actions">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-custom text-center border-0">
+              <div class="card-body">
+                <h3 class="text-primary">Manage your<b> Interviews</b></h3>
+                <p>A SaaS to help you manage interviews in journalism and professional content creation (e.g. blog).</p>
+                <a href="{{ url('register') }}" role="button" class="btn btn-lg btn-primary">Sign Up Free Now</a>
               </div>
-              
-</div>
-@endforeach 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="power-the-curious-section">
+    <div class="container">
+      <h2 class="text-primary">Publinetis - Because the value is mainly in the questions</h2>
+      <p>With Publinetis you will be able to do better interviews, to focus more on the key questions. </p>
+      <p class="m-0"><b>The SaaS for better journalism</b></p>
+    </div>
+  </section>
 
-</div>
+  <section class="thankyou-section">
+    <div class="container">
+      <div class="wrapper">
+        <div class="inner-wrapper">
+          <!-- <img class="img-fluid mx-auto" src="{{ asset('assets/layouts/layout4/front/images1/smiley.png') }}">
+          <h2>Thank you!!</h2>
+          <p>For giving your precious time to our site, We are here to help you.</p>
+          <form class="thankyou-form d-flex" action="#">
+            <input type="text" class="form-control" placeholder="Enter your email here">
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+          </form> -->
+	<div class="AW-Form-536070429"></div>
 
-</div>
-</div>
-</div>
-</section>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!--  -->
 
 <!-- /Content Area-->
-@include('layouts.footer')
+@include('layouts.footerhome')

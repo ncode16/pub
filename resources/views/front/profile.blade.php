@@ -42,7 +42,7 @@ $logo = isset($profile_data->profile_pic) ? $profile_data->profile_pic : '';
 
 <div class="form-group">
 <label class="fName">Password</label>
-    <input type="text" class="form-control form-control-lg" placeholder="Your passowrd" id="password" name="password" required="" value="{{ $password }}">
+    <input type="password" class="form-control form-control-lg" placeholder="Your passowrd" id="password" name="password" required="" value="{{ $password }}">
 </div>
 
 <div class="form-group">

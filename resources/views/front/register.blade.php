@@ -62,7 +62,7 @@
 <div class="col-12 col-lg-6">
 <div class="h-100 loginFromBut" style="background:url({{ asset('assets/layouts/layout4/front/images/registerBack.png') }}) no-repeat center bottom; background-size:cover;">
 <p>Already have an account?</p>
-<a href="{{ url('/login') }}" class="btn btn-rnd btn-green">Log In »</a>
+<a href="{{ url('/login') }}" class="btn btn-rnd btn-green" style="background: #FFF;color: #2771b8 !important;">Log In »</a>
 </div>
 </div>
 </div>

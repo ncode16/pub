@@ -1,7 +1,5 @@
 @include('layouts.header')
 
-
-
 <?php
 $login_type = session('login_type');
 
@@ -305,6 +303,15 @@ $que_note_count = count($question_data);
 if(isset($question_data[0]->question) && !empty($question_data[0]->question)){
   $question1 = $question_data[0]->question;
 }
+$id1 = '';
+if(isset($question_data[0]->id) && !empty($question_data[0]->id)){
+  $id1 = $question_data[0]->id;
+}
+
+$id2 = '';
+if(isset($question_data[1]->id) && !empty($question_data[1]->id)){
+  $id2 = $question_data[1]->id;
+}
 
 if(isset($question_data[1]->question) && !empty($question_data[1]->question)){
   $question2 = $question_data[1]->question;
@@ -351,6 +358,8 @@ if($login_type == 'interviewee'){
 }else{
   $url = 'interview/'.$interviewid ;
 }
+
+$interviewee_user = DB::table('user_interviewee')->get();
 ?>
 
 <form class="feildForm" runat="server"  action="{{ url($url) }}" name="frmmultistep1" id="frmmultistep1"  method="POST" enctype="multipart/form-data">
@@ -362,7 +371,7 @@ if($login_type == 'interviewee'){
 <div class="col-12">
 <!-- <h1 contenteditable="true">Interview with Michael Jordan</h1> -->
 <h1 contenteditable="false">Interview with 
-<input type="text" name="interview_with" id="interview_with" value="<?php echo $interview_with; ?>" autocomplete="off" class="<?php if($login_type == 'interviewee'){ ?> disabled <?php } ?>" >
+<input type="text" name="interview_with" id="interview_with" value="<?php echo $interview_with; ?>" autocomplete="off" class="<?php if($login_type == 'interviewee'){ ?> disabled <?php } ?>" style="font-size:54px !important;font-weight:400;" >
 </h1>
 <!--<p>We get answers for 20 million questions daily. Get the feedback you need with a global leader in survey software.</p>-->
 <!-- <a class="btn btn-rnd btn-green">New interview</a> -->
@@ -597,6 +606,24 @@ if($login_type == 'interviewee'){
     <div class="detSection">
       <h3>Information about the interviewee</h3>
       <div class="intHead">Who is the interviewee?</div>
+      
+
+      <div class="form-group">
+        <label class="fName">Select interviewee *</label>
+        <select class="form-control form-control-lg" id="select_interviewee" name="select_interviewee" >  
+        	<option value="">Select Interviewee</option>
+        	<?php
+        		if(isset($interviewee_user) && !empty($interviewee_user)){ 
+        			foreach ($interviewee_user as $key => $value) {
+        	?>
+        				<option value="{{ $value->id }}">{{ $value->first_name.' '.$value->last_name }}</option>
+        	<?php
+        			}
+        		}	
+        	?>
+
+        </select>
+      </div>
 
       <div class="form-group">
         <label class="fName">Name *</label>
@@ -731,6 +758,9 @@ if($login_type == 'interviewee'){
           <label class="fName">Note 1</label>
           <textarea type="text" class="form-control form-control-lg" id="s3_note" name="s3_que[1][notes]" placeholder="" >{{ $note1 }}</textarea>
       </div>
+      <div class="form-group">
+        <a href="{{ url('remove_question/'.$interviewid.'/'.$id1) }}" class="btn btn-add more-field" >-</a>
+      </div>
       </div>
 
       <input type="hidden" class="form-control form-control-lg <?php if($login_type != 'admin'){ ?> disabled <?php } ?>" name="s3_que[1][anwser]" value = "<?php if(isset($anwser1)){ echo $anwser1; } ?>">
@@ -755,6 +785,9 @@ if($login_type == 'interviewee'){
           <label class="fName">Note 2</label>
           <textarea type="text" class="form-control form-control-lg" id="s3_note" name="s3_que[2][notes]" placeholder="">{{ $note2 }}</textarea>
       </div>
+      <div class="form-group">
+        <a href="{{ url('remove_question/'.$interviewid.'/'.$id2) }}" class="btn btn-add more-field" >-</a>
+      </div>
       </div>
 
       <input type="hidden" class="form-control form-control-lg <?php if($login_type != 'admin'){ ?> disabled <?php } ?>" name="s3_que[2][anwser]" value = "<?php if(isset($anwser2)){ echo $anwser2; } ?>">
@@ -766,6 +799,10 @@ if($login_type == 'interviewee'){
       <input type="hidden" name="s3_que[2][interviewer_validate]" value = "<?php if(isset($interviewer_validate2)){ echo $interviewer_validate2; } ?>">
 
       <input type="hidden" name="s3_que[2][interviewee_validate]" value="<?php if(isset($interviewee_validate2)){ echo $interviewee_validate2; } ?>">
+
+      <?php $fill_interviewer = isset($question_data[0]->fill_interviewer) ? $question_data[0]->fill_interviewer : '';?>
+      <input type="hidden" name="fill_interviewer" value="<?php echo $fill_interviewer; ?>">
+
       <hr style="border-color: #00bf6f;">
       </li>
       <?php
@@ -787,6 +824,9 @@ if($login_type == 'interviewee'){
               <label class="fName">Note <?php echo $i;?></label>
               <textarea type="text" class="form-control form-control-lg" id="s3_note" name="s3_que[<?php echo $i;?>][notes]" placeholder="" ><?php if(isset($value->notes)){ echo $value->notes; } ?></textarea>
             </div> 
+            <div class="form-group">
+              <a href="{{ url('remove_question/'.$interviewid.'/'.$value->id) }}" class="btn btn-add more-field" >-</a>
+            </div>
             </div> 
 
             <input type="hidden" class="form-control form-control-lg <?php if($login_type != 'admin'){ ?> disabled <?php } ?>" name="s3_que[<?php echo $i;?>][anwser]" value = "<?php if(isset($value->anwser)){ echo $value->anwser; } ?>">
@@ -853,6 +893,11 @@ if($login_type == 'interviewee'){
   <form class="feildForm" runat="server"  action="{{ url($url) }}" name="frmmultistep4" id="frmmultistep4"  method="POST" enctype="multipart/form-data">
   @csrf
     <input type="hidden" id="s4_interviewid" name="s4_interviewid" value="{{ $interviewid }}"> 
+    <div class="custom-control">
+    <?php $fill_interviewer = isset($question_data[0]->fill_interviewer) ? $question_data[0]->fill_interviewer : '';?>
+      <input type="checkbox" id="custom-fill-interviewer" name="fill_interviewer" value="yes" class="custom-control-input " <?php if($fill_interviewer == 'yes'){ ?> checked <?php } ?>>
+      <label class="custom-control-label " for="custom-fill-interviewer"><b>Do you want to fill as interviewer the answer?</b></label>
+    </div>
     <div class="detSection">
       <h3>Answers</h3>
       <?php
@@ -871,7 +916,7 @@ if($login_type == 'interviewee'){
             </div>  
             <div class="form-group">
               <label class="fName">Answer <?php echo $i;?></label>
-              <textarea type="text" class="form-control form-control-lg <?php if($login_type == 'frontuser'){ ?> disabled <?php } ?>" id="s4_ans" name="s4_ans[<?php echo $i;?>][anwser]" placeholder="" ><?php if(isset($value->anwser)){ echo $value->anwser; } ?></textarea>
+              <textarea type="text" class="form-control form-control-lg <?php if($login_type == 'frontuser' && $fill_interviewer != 'yes'){ ?> disabled <?php } ?>" id="s4_ans" name="s4_ans[<?php echo $i;?>][anwser]" placeholder="" ><?php if(isset($value->anwser)){ echo $value->anwser; } ?></textarea>
               <input type="hidden" name="s4_ans[<?php echo $i;?>][id]" value="<?php echo $value->id;?>">
             </div>
             <hr style="border-color: #00bf6f;">
@@ -906,6 +951,15 @@ if($login_type == 'interviewee'){
     <input type="hidden" id="s5_interviewid" name="s5_interviewid" value="{{ $interviewid }}"> 
     <div class="detSection">
       <h3>Review</h3>
+      <div class="form-group">
+          <label class="fName">Title interview/article</label>
+          <textarea type="text" class="form-control form-control-lg disabled" id="interview_article" name="interview_article" placeholder="E.g. Interview with Barack Obama, the superstar politician"> {{ $interview_article }} </textarea>
+      </div>
+      <div class="form-group">
+          <label class="fName">Lead paragraph (rider, chapeau)</label>
+          <textarea type="text" class="form-control form-control-lg disabled" id="lead_paragraph" name="lead_paragraph" placeholder="">{{ $lead_paragraph }}</textarea>
+      </div>
+      <hr style="border-color: #00bf6f;">
       <?php
         if($que_note_count > 0){
           $i = 0;
@@ -965,6 +1019,15 @@ if($login_type == 'interviewee'){
     <input type="hidden" id="s6_interviewid" name="s6_interviewid" value="{{ $interviewid }}"> 
     <div class="detSection">
       <h3><?php if($login_type == 'interviewee'){ ?>Validation by Interviewee<?php }else{ ?>Validation by Interviewer<?php } ?></h3>
+      <div class="form-group">
+          <label class="fName">Title interview/article</label>
+          <textarea type="text" class="form-control form-control-lg disabled" id="interview_article" name="interview_article" placeholder="E.g. Interview with Barack Obama, the superstar politician"> {{ $interview_article }} </textarea>
+      </div>
+      <div class="form-group">
+          <label class="fName">Lead paragraph (rider, chapeau)</label>
+          <textarea type="text" class="form-control form-control-lg disabled" id="lead_paragraph" name="lead_paragraph" placeholder="">{{ $lead_paragraph }}</textarea>
+      </div>
+      <hr style="border-color: #00bf6f;">
       <?php
         if($que_note_count > 0){
           $i = 0;
@@ -1012,7 +1075,7 @@ if($login_type == 'interviewee'){
           }
       ?>
           <div class="form-group">
-            <label class="fName">Select all questions and answers</label>
+            <label class="fName">Do you validate the whole interview?</label>
             <div class="form-inline">
               <div class="custom-control">
                 <input type="checkbox" id="select-interviewer" class="custom-control-input" >
@@ -1026,7 +1089,7 @@ if($login_type == 'interviewee'){
           </div>
     </div>
     <div>
-      <button type="submit" value="step_6" name="btn_step" id="btn_step" class="btn btn-green" style="width:21% !important;">Validate the interview</button> 
+      <button type="submit" value="step_6" name="btn_step" id="btn_step" class="btn btn-green">Validate the interview</button> 
     </div>
     <?php
         }else{
@@ -1199,6 +1262,12 @@ if($login_type == 'interviewee'){ ?>
     }
 })();
 </script>
+
+
+
+
+
+
 <script type="text/javascript">
   $('li').removeClass('resp-tab-active');
 </script>
@@ -1222,6 +1291,7 @@ if($login_type == 'interviewee'){
     $step = '1';
   }
 ?>
+
 <script type="text/javascript">
   $('#li-step-<?php echo $step;?>').addClass('resp-tab-active');
   $('#li-step-<?php echo $step;?>').click();
@@ -1417,6 +1487,32 @@ if($login_type == 'interviewee'){
   });
 
 </script>
+
+<script>
+        $(document).ready(function() {
+
+			var s = "<?php echo $user_data[0]->first_name ?>";
+
+			var pics = "<?php echo $user_data[0]->profile_pic ?>";
+
+		 	$('#fname').val("<?php echo $user_data[0]->first_name ?>");
+		        $('#lname').val("<?php echo $user_data[0]->last_name ?>");
+		        $('#email').val("<?php echo $user_data[0]->email ?>");
+		        $('#occupation').val("<?php echo $user_data[0]->occupation ?>");
+		        $('#phone').val("<?php echo $user_data[0]->phone ?>");
+		        $('#site').val("<?php echo $user_data[0]->website ?>");
+		        
+		        var src = '{!! url("logo") !!}' + "/" + pics;
+		        if(pics != null){
+		          $('.auto-logo').attr('src',src);
+		          $('#old_logo').val(pics);  
+		        }  
+
+		        
+        });
+      </script>
+
+
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script>
@@ -1488,12 +1584,44 @@ if($login_type == 'interviewee'){
     });
   });
   $('#no_deadline').change(function(){
+    
     if(!$('#no_deadline').is(':checked')){
       $('#deadline_div').show();
       //$('#deadlinedate').val('');
     }else{
       $('#deadline_div').hide();
     }
+  });
+
+  $('#select_interviewee').change(function(){
+      var user_id = $(this).val();
+      
+      $.ajaxSetup({
+          headers: {
+              'X-CSRF-TOKEN': "{{ csrf_token() }}",
+          }
+      });
+      $.ajax({
+        url: '{{ url("select_user") }}',
+        data: {
+            'user_id': user_id,
+        },
+        type: "POST",
+        dataType: 'json',
+        success: function(data) {   
+            $('#s2_fname').val(data.first_name);
+            $('#s2_surname').val(data.last_name);
+            $('#s2_email').val(data.email);
+            $('#s2_occupation').val(data.occupation);
+            $('#s2_phone').val(data.phone);
+            //$('#site').val(data.website);
+            var src = '{!! url("logo") !!}' + "/" + data.profile_pic;
+            if(data.profile_pic != null){
+              $('.auto-logo2').attr('src',src);
+              $('#s2_old_logo').val(data.profile_pic);  
+            }
+        }
+    });
   });
 
   $('#no_deadline').change();
@@ -1544,8 +1672,10 @@ if($login_type == 'interviewee'){
     $('#select-interviewer').attr('checked','checked');
   }
 
-  
+
   //$('#no_deadline').click();
+
+  
   </script>
 
 <style type="text/css">

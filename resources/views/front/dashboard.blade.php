@@ -8,10 +8,10 @@
     border-color: #00bf6f;
     color: #fff;
     border: 1px solid #00bf6f;
-    padding: 10px 18px 12px;
+    padding: 15px 22px 16px;
     border-radius: 12px;
     text-decoration: none;
-    font-size: 14px
+    font-size: 16px
 }
 .new-interview-a{
 	float: right;margin-bottom: 20px;text-decoration: none !important;
@@ -69,13 +69,28 @@ if($login_type == 'interviewee'){
 
 			    <?php if(!empty($interviewdata)){
 			    		$i = 1;
+				$weeid = "";
+				$validates = array();
+
                         foreach ($interviewdata as $key => $value) {
+			
+		
+			$validates = DB::table('user_interviewee')
+		            ->select('*')
+		            ->where('email',$value->email_wee)
+		            ->get();
+			
+			$weeid = isset($validates[0]->id) ? $validates[0]->id : '';
+
+			$path1 = "https://www.publinetis.com/viewinterweedetail/".$weeid;
+
+
                 ?>
                             <tr class="odd gradeX">
                                 <td><?php echo $i;?></td>
                                 <!-- <td><?php echo $value->key; ?></td> -->
                                 <td><?php echo $value->name.' '.$value->lname; ?></td>
-                                <td><?php echo $value->name_wee.' '.$value->surname_wee; ?></td>
+                                <td><?php echo "<a href='".$path1."' style='color:#57bf6f !important;'>"; ?><?php echo $value->name_wee.' '.$value->surname_wee; ?></a></td>
                                 <td><?php echo date('m/d/Y',strtotime($value->created_date)); ?></td>
                                 <td><?php echo $value->deadline; ?></td>
                                 <td>
