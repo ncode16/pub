@@ -15,6 +15,7 @@ use App\UserInterviewee;
 use App\Questions;
 use App\ContactUs;
 use App\AboutUs;
+use App\AdminInterviewee;
 use File;
 use Illuminate\Routing\UrlGenerator;
 
@@ -120,8 +121,27 @@ class Front_managerController extends Controller
                             ->where('deadline','<',$current_date)
                             ->where('deadline','!=','None')
                             ->update(array('deadline' => 'None'));
-                            
-       return view('front/multi-step-form',compact('interviewid','interviewdata','interviewee_data','question_data'));
+
+
+	$user_data = array();
+
+	$usertype = session('login_type');
+	$user_id = session('user_id');  
+
+	if($usertype != "admin"){
+
+	$user_data = DB::table('users')
+                     ->select('*')
+                     ->where('id',$user_id)
+                     ->get();
+	}
+
+	if($usertype != "admin"){	                            
+       return view('front/multi-step-form',compact('usertype','user_data','interviewid','interviewdata','interviewee_data','question_data'));
+		} else{
+       return view('front/multi-step-form-admin',compact('usertype','user_data','interviewid','interviewdata','interviewee_data','question_data'));
+
+		}
     }
 
 
@@ -240,10 +260,10 @@ class Front_managerController extends Controller
   		        $update_detail = DB::table('interviewer_1')
                               ->where('iid', $check->iid)
                               ->update($data);
-          		return Redirect::to($url.$interviewid)->with('success','Data Saved.')->with('step','1');
+          		return Redirect::to($url.$interviewid)->with('success','Data Saved.')->with('step','2');
           } 
           UserInterview::UpdateOrCreate($data); 
-       		return Redirect::to($url.$interviewid)->with('success','Data Saved.')->with('step','1');
+       		return Redirect::to($url.$interviewid)->with('success','Data Saved.')->with('step','2');
       }
 
       if($step == 'step_2'){
@@ -261,6 +281,7 @@ class Front_managerController extends Controller
           $linkedin_page = $request->input('linkedin_page');
           $instagram_page = $request->input('instagram_page');
           $other_social_media_page = $request->input('other_social_media_page');
+          $user_id = $request->input('user_id');
 
           $s2_old_logo = $request->input('s2_old_logo');
           if ($request->hasFile('s2_logo')) {
@@ -279,7 +300,20 @@ class Front_managerController extends Controller
           }else{
             $s2_logo_name = $s2_old_logo;
           }
-
+          $check = DB::table('user_interviewee')->where('email','=',$s2_email)->first();
+          if(empty($user_id) && empty($check)){
+            
+            $s2_data1 = array(
+                          'first_name' => $s2_fname,
+                          'last_name' => $s2_surname,
+                          'occupation' => $s2_occupation,
+                          'email'=> $s2_email,
+                          'phone' => $s2_phone,
+                          'profile_pic' => $s2_logo_name,
+                          'password' => '123456',
+                    );
+            DB::table('user_interviewee')->insert($s2_data1);
+          }
           $s2_data = array(
                           'name_wee' => $s2_fname,
                           'surname_wee' => $s2_surname,
@@ -305,10 +339,10 @@ class Front_managerController extends Controller
               $update_detail = DB::table('interviewee_2')
                               ->where('iid', $check->iid)
                               ->update($s2_data);
-              return Redirect::to($url.$s2_iid)->with('success','Data Saved.')->with('step','2');
+              return Redirect::to($url.$s2_iid)->with('success','Data Saved.')->with('step','3');
           }
           UserInterviewee::UpdateOrCreate($s2_data); 
-          return Redirect::to($url.$s2_iid)->with('success','Data Saved.')->with('step','2');
+          return Redirect::to($url.$s2_iid)->with('success','Data Saved.')->with('step','3');
       }
 
       if($step == 'step_3') {
@@ -321,6 +355,7 @@ class Front_managerController extends Controller
          $interview_article = $request->input('interview_article');
          $subtitle = $request->input('subtitle');
          $interview_website = $request->input('interview_website');
+         $fill_interviewer = $request->input('fill_interviewer');
 
          $delete_detail = DB::table('questions_3')
                               ->where('iid', $s3_iid)
@@ -376,6 +411,7 @@ class Front_managerController extends Controller
                 'interview_article' => $interview_article,
                 'subtitle' => $subtitle,
                 'interview_website' => $interview_website,
+                'fill_interviewer' => $fill_interviewer,
          			);
          	}
          	if($question == '' && $notes != ''){
@@ -394,6 +430,7 @@ class Front_managerController extends Controller
                 'interview_article' => $interview_article,
                 'subtitle' => $subtitle,
                 'interview_website' => $interview_website,
+                'fill_interviewer' => $fill_interviewer,
          			);
          	}
          	if($question != '' && $notes == ''){
@@ -412,16 +449,18 @@ class Front_managerController extends Controller
                 'interview_article' => $interview_article,
                 'subtitle' => $subtitle,
                 'interview_website' => $interview_website,
+                'fill_interviewer' => $fill_interviewer,
          			);
          	}
          	Questions::UpdateOrCreate($s3_data); 
          }
-         return Redirect::to($url.$s3_iid)->with('success','Data Saved.')->with('step','3');
+         return Redirect::to($url.$s3_iid)->with('success','Data Saved.')->with('step','4');
       }
 
       if($step == 'step_4') {
       	 $s4_iid = $request->input('s4_interviewid');
          $s4_answers = $request->input('s4_ans');
+         $fill_interviewer = $request->input('fill_interviewer');
 
          foreach ($s4_answers as $key => $s4_ans) {
          	$question = null;
@@ -446,13 +485,15 @@ class Front_managerController extends Controller
          		$s4_data = array(
          				'question' => $question,
          				'notes' => $notes,
-         				'anwser' => $anwser,
+                'anwser' => $anwser,
+         				'fill_interviewer' => $fill_interviewer,
          			);
+
          		$update_detail = DB::table('questions_3')
                               ->where('id', $id)
                               ->update($s4_data);
          }
-         return Redirect::to($url.$s4_iid)->with('success','Data Saved.')->with('step','4');
+         return Redirect::to($url.$s4_iid)->with('success','Data Saved.')->with('step','5');
       } 
 
       if($step == 'step_5') {
@@ -499,7 +540,7 @@ class Front_managerController extends Controller
                           ->update($s5_data);
          	
          }
-        return Redirect::to($url.$s5_iid)->with('success','Data Saved.')->with('step','5');
+        return Redirect::to($url.$s5_iid)->with('success','Data Saved.')->with('step','6');
       }
       if($step == 'step_6') {
          $s6_iid = $request->input('s6_interviewid');
@@ -671,6 +712,23 @@ class Front_managerController extends Controller
       }
     }
 
+    public function remove_question($iid,$id = null)
+    {
+        if(!empty($id) && !empty($iid)){
+            $delete_data = array(
+                                    'id' => $id,
+                                    'iid' => $iid
+                                );
+            $results = DB::table('questions_3')->where($delete_data)->delete();
+            if($results){
+              return Redirect::to('interview/'.$iid)->with('success','Question Deleted.')->with('step','3');
+            }else{
+              return Redirect::to('interview/'.$iid)->with('success','Some error.')->with('step','3');
+            }
+        }else{
+          return Redirect::to('interview/'.$iid)->with('success','No data.')->with('step','3');
+        }
+    }
     public function service()
     {
 
@@ -694,6 +752,42 @@ class Front_managerController extends Controller
 
         return view('front/contact',compact('contact_us'));
     }
+
+
+
+public function viewinterviews($id)
+  {
+  	  $service = DB::table('services')
+              ->select('*')
+              ->get();
+      $current_date = date("m/d/Y");
+      $interviewer_1 = DB::table('interviewer_1')
+                  ->where('deadline','<',$current_date)
+                  ->where('deadline','!=','None')
+                  ->update(array('deadline' => 'None'));
+      $login_type = session('login_type');
+
+	$intdata = DB::table('user_interviewee')
+              ->select('*')
+	      ->where('user_interviewee.id',$id)
+              ->get();
+
+          $user_id = session('user_id');
+
+	$uname = $intdata[0]->first_name.' '.$intdata[0]->last_name;
+
+          $interviewdata = DB::table('interviewer_1 AS i1')
+               ->leftjoin('interviewee_2 AS i2','i2.iid','=','i1.iid')
+               ->leftjoin('users AS u','i1.user_id','=','u.id')
+               ->select('i1.*','i2.*','i1.iid AS key','i1.created_at AS created_date')
+               ->where('i2.email_wee',$intdata[0]->email)
+               ->get();  
+
+
+// echo "<pre>";print_r($interviewdata);exit;
+      
+      return view('front/viewinterviews',compact('uname','service','interviewdata'));
+  }
 
   public function dashboard()
   {
@@ -728,6 +822,20 @@ class Front_managerController extends Controller
       return view('front/dashboard',compact('service','interviewdata'));
   }
 
+
+public function interviewees()
+  {
+	
+	$interviewdata = DB::table('user_interviewee')
+              ->select('*')
+              ->get();
+
+// echo "<pre>";print_r($interviewdata);exit;
+
+      return view('front/interviewees',compact('interviewdata'));
+  }
+
+
   public function profile()
   {
       $login_type = session('login_type');
@@ -747,6 +855,110 @@ class Front_managerController extends Controller
 
       return view('front/profile',compact('profile_data'));
   }
+
+
+public function newinterviewee()
+  {      
+	$act = "add";
+
+      return view('front/newinterviewee',compact('interviewee_data','act'));
+  }
+
+
+
+public function viewinterweedetail($id)
+  {
+      
+          $interviewee_data = DB::table('user_interviewee')
+               ->select('*')
+               ->where('id',$id)
+               ->first();
+	
+	$act = "edit";
+
+      return view('front/newinterviewee',compact('interviewee_data','act'));
+  }
+
+
+
+
+
+	
+	 public function add_interwees(Request $request)
+        	{
+
+		$id = $request->input('id');
+		  $s2_fname = $request->input('s2_fname');
+		  $s2_surname = $request->input('s2_surname');
+		  $s2_occupation = $request->input('s2_occupation');
+		  $s2_email = $request->input('s2_email');
+		  $s2_phone = $request->input('s2_phone');
+		  $s2_notes = $request->input('s2_notes');
+		  $s2_link_congress = $request->input('s2_link_congress');
+		  $s2_link_download = $request->input('s2_link_download');
+		  $facebook_page = $request->input('facebook_page');
+		  $twitter_page = $request->input('twitter_page');
+		  $linkedin_page = $request->input('linkedin_page');
+		  $instagram_page = $request->input('instagram_page');
+		  $other_social_media_page = $request->input('other_social_media_page');
+
+		  $s2_old_logo = $request->input('s2_old_logo');
+		  if ($request->hasFile('s2_logo')) {
+		    $s2_old_logo_path = public_path('/logo'). "/".  $s2_old_logo;
+		    if(!empty($s2_old_logo))
+		    {
+		      if (File::exists($s2_old_logo_path)) {
+		        //unlink($s2_old_logo_path);
+		      }
+		    }
+		    $image = $request->file('s2_logo');
+		    $s2_logo_name = $image->getClientOriginalName();
+		    $destinationPath = public_path('/logo');
+		    $imagePath = $destinationPath. "/".  $s2_logo_name;
+		    $image->move($destinationPath, $s2_logo_name);
+		  }else{
+		    $s2_logo_name = $s2_old_logo;
+		  }
+
+		  $s2_data = array(
+		                  'first_name' => $s2_fname,
+		                  'last_name' => $s2_surname,
+		                  'occupation' => $s2_occupation,
+		                  'email'=> $s2_email,
+		                  'phone' => $s2_phone,		                  
+		                  'profile_pic' => $s2_logo_name,
+				 'notes_wee' => $s2_notes,
+		                  'link_congress' => $s2_link_congress,
+		                  'link' => $s2_link_download,
+		                  'facebook_page' => $facebook_page,
+		                  'twitter_page' => $twitter_page,
+		                  'instagram_page' => $instagram_page,
+		                  'linkedin_page' => $linkedin_page,
+		                  'other_social_media_page' => $other_social_media_page,
+		            );
+		
+ 	if(!empty($id))
+	{
+	
+	  $update_detail = DB::table('user_interviewee')
+                              ->where('id', $id)
+                              ->update($s2_data);
+
+	} else {
+
+ 	AdminInterviewee::UpdateOrCreate($s2_data); 
+
+	}
+
+		 
+
+		return Redirect::to('/interviewees');
+
+
+
+	}
+
+
 
   public function update_profile(Request $request)
   {
@@ -821,6 +1033,16 @@ class Front_managerController extends Controller
            
       return Redirect::to('dashboard')->with('success','Interview delete successfully.');
   }
+
+public function delete_wee($id)
+  {
+      
+      DB::table('user_interviewee')->where('id', '=', $id)->delete();     
+           
+      return Redirect::to('interviewees')->with('success','Interview delete successfully.');
+  }
+
+
   public function register()
     {
         return view('front/register');
@@ -945,5 +1167,17 @@ class Front_managerController extends Controller
                 ->first();
 
       echo json_encode($users);
+  }
+
+  public function select_user(Request $request)
+  {
+      $user_id = $request->input('user_id');
+      $interviewee_user = array();
+      if(!empty($user_id)){
+        $interviewee_user = DB::table('user_interviewee')
+                            ->where('id','=',$user_id)
+                            ->first();
+      }
+      echo json_encode($interviewee_user);
   }
 }
